@@ -1,0 +1,16 @@
+<launch>	
+	<remap from="/hardware/mobile_base/odometry" to="/navigation/localization/base_pose_ground_truth"/>
+	<remap from="/navigation/localization/amcl_pose" to="/navigation/localization/current_pose"/>
+	<param name="robot_description" command="cat $(find knowledge)/hardware/justina.xml" />
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+	<node name="gmapping_link_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0.0 0 0 0 map odom 100"/>
+	<include file="$(find surge_et_ambula)/launch/justina_hardware.launch">
+		<arg name="simul" default="true"/>
+	</include>	
+	<group ns="hri">
+		<node name="rviz" pkg="rviz" type="rviz" args="-d $(find knowledge)/hri/rviz_config.rviz"/>
+		<node name="justina_gui" pkg="justina_gui" type="justina_gui_node" output="screen"
+			args="-p $(find knowledge)/navigation/"/>
+	</group>
+
+</launch>
