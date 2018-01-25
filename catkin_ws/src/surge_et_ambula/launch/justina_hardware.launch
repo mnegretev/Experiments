@@ -1,0 +1,44 @@
+<launch>
+	<arg name="simul"/>
+	<group ns="hardware">
+		<!-- Nodes to the real justina robot -->
+		<node name="mobile_base" pkg="mobile_base" type="omni_base.py" output="screen">
+			<param name="simul" value="$(arg simul)"/>
+			<param name="port1" value="/dev/justinaRC30"/>
+			<param name="port2" value="/dev/justinaRC15"/>
+		</node>
+		<node unless="$(arg simul)" name="right_arm" pkg="arms" type="right_arm_node" output="screen" respawn="true">
+			<param name="port" value="/dev/justinaRightArm"/>
+			<param name="baud" value="200000"/>
+			<param name="bulk_enable" value="true"/>
+			<param name="write_sync_enable" value="true"/>
+		</node>
+		<node unless="$(arg simul)"  name="left_arm" pkg="arms" type="left_arm_node" output="screen" respawn="true">
+			<param name="port" value="/dev/justinaLeftArm"/>
+			<param name="baud" value="1000000"/>
+			<param name="bulk_enable" value="true"/>
+			<param name="write_sync_enable" value="true"/>
+		</node>
+		<node unless="$(arg simul)" name="head" pkg="head" type="head_node.py" output="screen" args="--port /dev/justinaHead --baud 1000000"/>
+		<node unless="$(arg simul)" name="torso" pkg="torso" type="torso_node_A.py" output="screen"/>
+		<node unless="$(arg simul)" name="kinect_man" pkg="kinect_man" type="kinect_man_node" output="screen"/>
+		<node unless="$(arg simul)" name="urg_node" pkg="urg_node" type="urg_node" output="screen">
+			<param name="serial_port" type="string" value="/dev/justinaHokuyo" />
+			<param name="frame_id" type="string" value="laser_link" />
+		</node>
+		<node unless="$(arg simul)" name="hokuyo_rear" pkg="urg_node" type="urg_node" output="screen">
+			<param name="serial_port" type="string" value="/dev/justinaHokuyoRear" />
+			<param name="frame_id" type="string" value="laser_link_rear" />
+			<remap from="scan" to="scan_rear" />
+		</node>
+		<!-- Nodes to the simulation justina robot -->
+		<node if="$(arg simul)" name="right_arm" pkg="arms" type="right_arm_simul_node.py" output="screen"/>
+		<node if="$(arg simul)" name="left_arm" pkg="arms" type="left_arm_simul_node.py" output="screen"/>
+		<node if="$(arg simul)" name="head" pkg="head" type="head_simul_node.py" output="screen"/>
+		<node if="$(arg simul)" name="torso" pkg="torso" type="torso_node.py" output="screen" args="--simul"/>
+		<node if="$(arg simul)" name="kinect_man" pkg="kinect_man" type="kinect_man_node" output="screen" args="--bag $(find kinect_man)/videos/example.bag"/>	
+		<node if="$(arg simul)" name="laser_simul" pkg="laser_simulator" type="laser_simulator_node" args="--bag $(find laser_simulator)/bags/example.bag" output="screen"/>
+		<!-- Nodes to common modes -->
+		<node name="joy" pkg="joy" type="joy_node" output="screen"/>
+	</group>
+</launch>
