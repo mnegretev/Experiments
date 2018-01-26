@@ -9,6 +9,7 @@
 #include "std_msgs/Float32.h"
 #include "std_msgs/Float32MultiArray.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
+#include "geometry_msgs/PoseStamped.h"
 #include "nav_msgs/GetMap.h"
 #include "nav_msgs/Path.h"
 #include "hri_msgs/RecognizedSpeech.h"
@@ -30,13 +31,16 @@ public:
     ~QtRosNode();
 
     ros::NodeHandle* n;
+    ros::Subscriber subGoalPointPose;
     bool gui_closed;
     
     void run();
     void setNodeHandle(ros::NodeHandle* nh);
+    void callback_goal_pose(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
 signals:
     void updateGraphics();
     void onRosNodeFinished();
+    void onGoalPoseReceived(float goal_x, float goal_y, float goal_theta);
     
 };

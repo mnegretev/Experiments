@@ -134,6 +134,7 @@ void MainWindow::setRosNode(QtRosNode* qtRosNode)
     //For example, when ros finishes or when a rostopic is received
     QObject::connect(qtRosNode, SIGNAL(onRosNodeFinished()), this, SLOT(close()));
     QObject::connect(qtRosNode, SIGNAL(updateGraphics()), this, SLOT(updateGraphicsReceived()));
+    QObject::connect(qtRosNode, SIGNAL(onGoalPoseReceived(float, float, float)), this,SLOT(goalPoseReceived(float, float, float)));
 }
 
 //
@@ -842,6 +843,12 @@ void MainWindow::hriBtnLegsClicked()
 //
 //SLOTS FOR SIGNALS EMITTED IN THE QTROSNODE
 //
+void MainWindow::goalPoseReceived(float goal_x, float goal_y, float goal_theta)
+{
+    this->ui->navTxtGoalPose->setText(QString::number(goal_x, 'f', 2) + " " + QString::number(goal_y, 'f', 2) +
+				      " " + QString::number(goal_theta, 'f',2));
+    navBtnCalcPath_pressed();
+}
 
 void MainWindow::updateGraphicsReceived()
 {

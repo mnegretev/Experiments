@@ -105,6 +105,7 @@ public slots:
     void hriBtnFollowClicked();
     void hriBtnLegsClicked();
     //Slots for signals emitted in the QtRosNode (e.g. a topic is received)
+    void goalPoseReceived(float goal_x, float goal_y, float goal_theta);
     void updateGraphicsReceived();
     //Slots for signad to tab knowledge
     void on_enInteractiveEdit_clicked();

@@ -49,5 +49,5 @@
   <node name="Remote" pkg="nav2d_remote" type="remote_joy" />
   
   <!-- RVIZ to view the visualization -->
-  <node name="RVIZ" pkg="rviz" type="rviz" args=" -d $(find experiments)/param/justina_nav2d.rviz" />
+  <node name="RVIZ" pkg="rviz" type="rviz" args=" -d $(find experiments)/param/justina_nav2d.rviz" respawn="true"/>
 </launch>

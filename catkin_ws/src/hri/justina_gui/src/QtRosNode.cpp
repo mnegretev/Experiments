@@ -12,6 +12,7 @@ QtRosNode::~QtRosNode()
 void QtRosNode::run()
 {    
     ros::Rate loop(10);
+    subGoalPointPose = n->subscribe("/move_base_simple/goal", 1, &QtRosNode::callback_goal_pose, this);
     while(ros::ok() && !this->gui_closed)
     {
         //std::cout << "Ros node running..." << std::endl;
@@ -33,4 +34,12 @@ void QtRosNode::setNodeHandle(ros::NodeHandle* nh)
     JustinaTools::setNodeHandle(nh);
     JustinaKnowledge::setNodeHandle(nh);
     JustinaRepresentation::setNodeHandle(nh);
+}
+
+void QtRosNode::callback_goal_pose(const geometry_msgs::PoseStamped::ConstPtr& msg)
+{
+    float x = msg->pose.position.x;
+    float y = msg->pose.position.y;
+    float theta = atan2(msg->pose.orientation.z, msg->pose.orientation.w)*2;
+    emit onGoalPoseReceived(x, y, theta);
 }
