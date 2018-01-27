@@ -51,6 +51,9 @@
       <node name="simple_move" pkg="simple_move" type="simple_move_node" output="screen" args="--move_head"/>
       <node name="path_calculator" pkg="path_calculator" type="path_calculator_node" output="screen"/>
     </group>
+    <group ns="obs_avoidance">
+      <node name="collision_detector" pkg="collision_detector" type="collision_detector_node" output="screen"/>
+    </group>
     <node name="mvn_pln" pkg="mvn_pln" type="mvn_pln_node" output="screen" args="--max_attempts 25"/>
   </group>
 

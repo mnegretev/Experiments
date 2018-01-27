@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /PointStamped1
       Splitter Ratio: 0.542328
     Tree Height: 736
   - Class: rviz/Selection
@@ -323,6 +324,16 @@ Visualization Manager:
       Enabled: true
       Name: Plan
       Topic: /Navigator/plan
+      Value: true
+    - Alpha: 1
+      Class: rviz/PointStamped
+      Color: 255; 0; 0
+      Enabled: true
+      History Length: 1
+      Name: PointStamped
+      Radius: 0.300000012
+      Topic: /navigation/obs_avoidance/collision_point
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:

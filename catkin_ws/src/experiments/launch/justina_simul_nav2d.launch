@@ -33,8 +33,10 @@
 	<param name="laser_min_range" value="0.2"/>
 	<param name="odom_model_type" value="omni"/>
       </node>
-
-    </group>  
+    </group>
+    <group ns="obs_avoidance">
+      <node name="collision_detector" pkg="collision_detector" type="collision_detector_node" output="screen"/>
+    </group>
   </group>
   
   <!-- Start the Navigator to move the robot autonomously -->
