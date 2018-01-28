@@ -10,6 +10,13 @@ project(experiments)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  std_msgs
+  geometry_msgs
+  sensor_msgs
+  nav_msgs
+  visualization_msgs
+  tf              
+  justina_tools
 )
 
 ## System dependencies are found with CMake's conventions
