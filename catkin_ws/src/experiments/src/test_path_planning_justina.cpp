@@ -13,7 +13,7 @@
 #include "visualization_msgs/Marker.h"
 #include "justina_tools/JustinaNavigation.h"
 
-#define SM_GET_RANDOM_GOALS 0
+#define SM_CHECK_STATUS 0
 #define SM_SEND_TO_GOAL     10
 #define SM_WAIT_FOR_GOAL_REACHED 20
 #define SM_GOAL_REACHED   30
@@ -23,39 +23,47 @@ float collision_x = 0;
 float collision_y = 0;
 bool global_goal_reached = false;
 
-void callback_goal_reached(const std_msgs::Bool::ConstPtr& msg)
+bool read_poses_from_file(std::vector<float>& goal_x, std::vector<float>& goal_y, std::string file_path,
+			  visualization_msgs::Marker& marker)
 {
-    global_goal_reached = true;
-}
+    std::cout << "Tester.->Loading known locations from " << file_path << std::endl;
+    std::vector<std::string> lines;
+    std::ifstream file(file_path.c_str());
+    std::string tempStr;
+    while (std::getline(file, tempStr))
+        lines.push_back(tempStr);
+    file.close();
 
-void callback_collision(const geometry_msgs::PointStamped::ConstPtr& msg)
-{
-    collision_detected = true;
-    collision_x = msg->point.x;
-    collision_y = msg->point.y;
-}
+    //Extraction of lines without comments
+    for (size_t i = 0; i < lines.size(); i++)
+    {
+        size_t idx = lines[i].find("//");
+        if (idx != std::string::npos)
+            lines[i] = lines[i].substr(0, idx);
+    }
 
-
-int main(int argc, char** argv)
-{	
-    std::cout << "INITIALIZING TEST OF PATH PLANNING ALGORITHMS USE JUSTINA'S SOFTWARE..." << std::endl;
-    ros::init(argc, argv, "test_path_planning");
-    ros::NodeHandle n;
-    ros::Rate loop(10);
-
+    float x, y;
+    goal_x.clear();
+    goal_y.clear();
+    for (size_t i = 0; i < lines.size(); i++)
+    {
+        std::vector<std::string> parts;
+        std::vector<float> loc;
+        boost::split(parts, lines[i], boost::is_any_of(" ,\t"), boost::token_compress_on);
+        if (parts.size() < 2) //Only takes those lines with two or more values
+            continue;
+	std::stringstream ssX(parts[0]);
+	std::stringstream ssY(parts[1]);
+	if(ssX >> x && ssY >> y)
+	{
+	    goal_x.push_back(x);
+	    goal_y.push_back(y);
+	}
+    }
+    std::cout << "Tester.->Total of parsed points: " << goal_x.size() << std::endl;
+    if(goal_x.size() < 1)
+	return false;
     
-    std::vector<float> goal_x, goal_y;
-    
-    JustinaNavigation::setNodeHandle(&n);
-    //
-    //Publishers and subscribers to set goal points, wait for the robot and count the collisions
-    //ros::Publisher  pubGetClose    = n.advertise<std_msgs::Float32MultiArray>("/navigation/mvn_pln/get_close_xya", 10);
-    ros::Subscriber subCollision   = n.subscribe("/navigation/obs_avoidance/collision_point", 10, callback_collision);
-    //ros::Subscriber subGoalReached = n.subscribe("/navigation/global_goal_reached", 10, callback_goal_reached);
-
-    //
-    //Generation of random goal points and displaying in rviz as a line strip
-    ros::Publisher pubRandomPoints = n.advertise<visualization_msgs::Marker>("/hri/visualization_marker", 1);
     visualization_msgs::Marker mrkPoints;
     mrkPoints.header.frame_id = "map";
     mrkPoints.type = visualization_msgs::Marker::LINE_STRIP;
@@ -79,27 +87,97 @@ int main(int argc, char** argv)
         mrkPoints.points[i+1].x = goal_x[i];
         mrkPoints.points[i+1].y = goal_y[i];
     }
+    marker = mrkPoints;
+    return true;
+}
 
+void callback_goal_reached(const std_msgs::Bool::ConstPtr& msg)
+{
+    global_goal_reached = true;
+}
+
+void callback_collision(const geometry_msgs::PointStamped::ConstPtr& msg)
+{
+    collision_detected = true;
+    collision_x = msg->point.x;
+    collision_y = msg->point.y;
+}
+
+
+int main(int argc, char** argv)
+{
+    std::string file_name = "";
+    bool correct_params = false;
+    for(int i=0; i < argc; i++)
+    {
+        std::string strParam(argv[i]);
+	if(strParam.compare("-f") == 0 && (i + 1) < argc)
+	{
+	    correct_params = true;
+	    file_name = argv[++i];
+	}
+    }
+    if(!correct_params)
+    {
+	std::cout << "Too few parameters!!! Usage: " << std::endl;
+	std::cout << "   -f file_name" << std::endl;
+	std::cout << "   File name where the random points are stored." << std::endl;
+	std::cout << "   This file can be generated using the random_goals_generator node" << std::endl;
+	return 0;
+    }
+    
+    std::cout << "INITIALIZING TEST OF PATH PLANNING ALGORITHMS USE JUSTINA'S SOFTWARE..." << std::endl;
+    ros::init(argc, argv, "test_path_planning");
+    ros::NodeHandle n;
+    ros::Rate loop(10);
+
+    std::string file_path = ros::package::getPath("experiments") + "/data/" + file_name + ".mpd";
+    std::vector<float> goal_x, goal_y;
+    visualization_msgs::Marker mrkPoints;
+    if(!read_poses_from_file(goal_x, goal_y, file_path, mrkPoints))
+    {
+	std::cout << "Tester.-> Invalid data file :'(" << std::endl;
+	return -1;
+    }
+
+    JustinaNavigation::setNodeHandle(&n);
+    ros::Subscriber subCollision   = n.subscribe("/navigation/obs_avoidance/collision_point", 10, callback_collision);
+    ros::Publisher pubRandomPoints = n.advertise<visualization_msgs::Marker>("/hri/visualization_marker", 1);
+    
     //
     //Variables for the state machine
-    
-    
     int collision_counter = 0;
     int current_state = SM_SEND_TO_GOAL;
     int current_goal = 0;
+    bool task_finished = false;
+    float robot_x = 0, robot_y = 0, robot_t = 0;
+    float last_robot_x = 0, last_robot_y = 0, last_robot_t = 0;
+    float traveled_dist = 0;
+    double traveling_time = 0;
+    ros::Time time_start, time_end;
 
-    while(ros::ok())
+    while(ros::ok() && ! task_finished)
     {
-        std_msgs::Float32MultiArray msgGetClose;
+	JustinaNavigation::getRobotPose(robot_x, robot_y, robot_t);
+	float delta_d = (robot_x - last_robot_x)*(robot_x - last_robot_x) + (robot_y - last_robot_y)*(robot_y - last_robot_y);
+	delta_d = sqrt(delta_d);
+	
         switch(current_state)
         {
+	case SM_CHECK_STATUS:
+	    if(current_goal >= goal_x.size())
+            {
+                std::cout << "Tester.->All points reached succesfully" << std::endl;
+                task_finished = true;
+            }
+            else
+                current_state = SM_SEND_TO_GOAL;
+	    break;
         case SM_SEND_TO_GOAL:
             std::cout << "Tester.->Sending robot to goal: " << goal_x[current_goal] << "  " << goal_y[current_goal] << std::endl;
-            msgGetClose.data.resize(2);
-            msgGetClose.data[0] = goal_x[current_goal];
-            msgGetClose.data[1] = goal_y[current_goal];
-            //pubGetClose.publish(msgGetClose);
             collision_counter = 0;
+	    traveled_dist = 0;
+	    time_start = ros::Time::now();
             JustinaNavigation::startGetClose(goal_x[current_goal], goal_y[current_goal]);
             current_state = SM_WAIT_FOR_GOAL_REACHED;
             break;
@@ -109,19 +187,18 @@ int main(int argc, char** argv)
                 collision_detected = false;
                 collision_counter++;
             }
+	    traveled_dist += delta_d;
             if(JustinaNavigation::isGlobalGoalReached()) //Flag is changed in the callback
                 current_state = SM_GOAL_REACHED;
             break;
         case SM_GOAL_REACHED:
-            std::cout << "Tester.->Goal point reached with " << collision_counter << " collisions detected" << std::endl;
+	    time_end = ros::Time::now();
+            std::cout << "Tester.->Goal point reached with: " << std::endl;
+	    std::cout << "Collisions: " << collision_counter << "\tDistance: " << traveled_dist;
+	    std::cout << "Time: " << traveling_time << std::endl;
             current_goal++;
-            if(current_goal >= goal_x.size())
-            {
-                std::cout << "Tester.->All points reached succesfully" << std::endl;
-                current_state = -1;
-            }
-            else
-                current_state = SM_SEND_TO_GOAL;
+	    traveling_time = (time_end - time_start).toSec();
+	    current_state = SM_CHECK_STATUS;
             break;
         default:
             break;
@@ -131,4 +208,5 @@ int main(int argc, char** argv)
 	ros::spinOnce();
 	loop.sleep();
     }
+    return 0;
 }
