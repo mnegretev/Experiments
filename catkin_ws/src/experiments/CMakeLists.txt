@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   tf              
   justina_tools
+  nav2d_navigator
 )
 
 ## System dependencies are found with CMake's conventions
