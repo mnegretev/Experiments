@@ -141,6 +141,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(test_path_planning_justina src/test_path_planning_justina.cpp)
+add_executable(test_path_planning_nav2d src/test_path_planning_nav2d.cpp)
 add_executable(random_goals_generator src/random_goals_generator.cpp)
 
 ## Rename C++ executable without prefix
@@ -152,10 +153,14 @@ add_executable(random_goals_generator src/random_goals_generator.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(test_path_planning_justina ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(test_path_planning_nav2d ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(random_goals_generator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(test_path_planning_justina
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(test_path_planning_nav2d
   ${catkin_LIBRARIES}
 )
 target_link_libraries(random_goals_generator
