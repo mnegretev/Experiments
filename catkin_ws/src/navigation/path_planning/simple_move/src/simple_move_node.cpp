@@ -21,6 +21,9 @@
 #define SM_GOAL_PATH_FINISH 8
 #define SM_COLLISION_RISK 9
 
+#define MAX_SPEED_FOR_PATHS 0.7
+#define MAX_SPEED_FOR_MOVES 0.2
+
 float goal_distance  = 0;
 float goal_angle     = 0;
 bool  move_lateral   = 0;
@@ -327,7 +330,7 @@ int main(int argc, char** argv)
             {
                 if(error < cruise_speed)
                     state = SM_GOAL_POSE_DECCEL;
-                else if(cruise_speed >= 0.2)
+                else if(cruise_speed >= MAX_SPEED_FOR_MOVES)
                     state = SM_GOAL_POSE_CRUISE;
                 else
                     state = SM_GOAL_POSE_ACCEL;
@@ -418,7 +421,7 @@ int main(int argc, char** argv)
             {
                 if(error < cruise_speed*1.5)
                     state = SM_GOAL_PATH_DECCEL;
-                else if(cruise_speed >= 0.35)
+                else if(cruise_speed >= MAX_SPEED_FOR_PATHS)
                     state = SM_GOAL_PATH_CRUISE;
 
                 twist = calculate_speeds(robot_x, robot_y, robot_t, goal_x, goal_y, cruise_speed, false);

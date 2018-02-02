@@ -8,8 +8,6 @@
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/Bool.h"
 #include "geometry_msgs/PointStamped.h"
-#include "nav_msgs/GetMap.h"
-#include "nav_msgs/OccupancyGrid.h"
 #include "visualization_msgs/Marker.h"
 #include "justina_tools/JustinaNavigation.h"
 
@@ -17,6 +15,7 @@
 #define SM_SEND_TO_GOAL     10
 #define SM_WAIT_FOR_GOAL_REACHED 20
 #define SM_GOAL_REACHED   30
+#define SM_SAVE_DATA  40
 
 bool collision_detected = false;
 float collision_x = 0;
@@ -105,36 +104,42 @@ void callback_collision(const geometry_msgs::PointStamped::ConstPtr& msg)
 
 
 int main(int argc, char** argv)
-{
-    std::string file_name = "";
-    bool correct_params = false;
-    for(int i=0; i < argc; i++)
-    {
-        std::string strParam(argv[i]);
-	if(strParam.compare("-f") == 0 && (i + 1) < argc)
-	{
-	    correct_params = true;
-	    file_name = argv[++i];
-	}
-    }
-    if(!correct_params)
-    {
-	std::cout << "Too few parameters!!! Usage: " << std::endl;
-	std::cout << "   -f file_name" << std::endl;
-	std::cout << "   File name where the random points are stored." << std::endl;
-	std::cout << "   This file can be generated using the random_goals_generator node" << std::endl;
-	return 0;
-    }
-    
+{    
     std::cout << "INITIALIZING TEST OF PATH PLANNING ALGORITHMS USE JUSTINA'S SOFTWARE..." << std::endl;
     ros::init(argc, argv, "test_path_planning");
     ros::NodeHandle n;
     ros::Rate loop(10);
 
-    std::string file_path = ros::package::getPath("experiments") + "/data/" + file_name + ".mpd";
+    std::string input_file = "";
+    boost::posix_time::ptime my_posix_time = ros::Time::now().toBoost();
+    std::string output_file = boost::posix_time::to_iso_extended_string(my_posix_time);
+    bool correct_params = false;
+    for(int i=0; i < argc; i++)
+    {
+        std::string strParam(argv[i]);
+	if(strParam.compare("--if") == 0 && (i + 1) < argc)
+	{
+	    correct_params = true;
+	    input_file = argv[++i];
+	}
+        if(strParam.compare("--of") == 0 && (i + 1) < argc)
+            output_file = argv[++i];
+    }
+    if(!correct_params)
+    {
+	std::cout << "Too few parameters!!! Usage: " << std::endl;
+	std::cout << "   --if input_file [--of output_file]" << std::endl;
+	std::cout << "   Input file is the file where the random points are stored." << std::endl;
+	std::cout << "   This file can be generated using the random_goals_generator node" << std::endl;
+        std::cout << "   Output file is the file where simulation result will be stored" << std::endl;
+        std::cout << "   If no output file is specified, posix date and time is used" << std::endl;
+	return 0;
+    }
+
+    std::string input_file_path = ros::package::getPath("experiments") + "/data/" + input_file + ".mpd";
     std::vector<float> goal_x, goal_y;
     visualization_msgs::Marker mrkPoints;
-    if(!read_poses_from_file(goal_x, goal_y, file_path, mrkPoints))
+    if(!read_poses_from_file(goal_x, goal_y, input_file_path, mrkPoints))
     {
 	std::cout << "Tester.-> Invalid data file :'(" << std::endl;
 	return -1;
@@ -146,20 +151,35 @@ int main(int argc, char** argv)
     
     //
     //Variables for the state machine
-    int collision_counter = 0;
+    std::vector<int>   collisions;
+    std::vector<int>   samples;
+    std::vector<float> travel_distances;
+    std::vector<float> travel_times;
+    std::vector<float> theta_changes;
+    collisions.resize(goal_x.size());
+    samples.resize(goal_x.size());
+    travel_distances.resize(goal_x.size());
+    travel_times.resize(goal_x.size());
+    theta_changes.resize(goal_x.size());
+    
     int current_state = SM_SEND_TO_GOAL;
     int current_goal = 0;
     bool task_finished = false;
     float robot_x = 0, robot_y = 0, robot_t = 0;
     float last_robot_x = 0, last_robot_y = 0, last_robot_t = 0;
-    float traveled_dist = 0;
-    double traveling_time = 0;
     ros::Time time_start, time_end;
+
+    std::string output_file_path = ros::package::getPath("experiments") + "/data/results_" + output_file + ".mpd";
+    std::ofstream output_stream;
 
     while(ros::ok() && ! task_finished)
     {
+        last_robot_x = robot_x;
+        last_robot_y = robot_y;
+        last_robot_t = robot_t;
 	JustinaNavigation::getRobotPose(robot_x, robot_y, robot_t);
 	float delta_d = (robot_x - last_robot_x)*(robot_x - last_robot_x) + (robot_y - last_robot_y)*(robot_y - last_robot_y);
+        float delta_t = fabs(robot_t - last_robot_t);
 	delta_d = sqrt(delta_d);
 	
         switch(current_state)
@@ -168,15 +188,17 @@ int main(int argc, char** argv)
 	    if(current_goal >= goal_x.size())
             {
                 std::cout << "Tester.->All points reached succesfully" << std::endl;
-                task_finished = true;
+                current_state = SM_SAVE_DATA;
             }
             else
                 current_state = SM_SEND_TO_GOAL;
 	    break;
         case SM_SEND_TO_GOAL:
             std::cout << "Tester.->Sending robot to goal: " << goal_x[current_goal] << "  " << goal_y[current_goal] << std::endl;
-            collision_counter = 0;
-	    traveled_dist = 0;
+            collisions[current_goal] = 0;
+	    travel_distances[current_goal] = 0;
+            theta_changes[current_goal] = 0;
+            samples[current_goal] = 0;
 	    time_start = ros::Time::now();
             JustinaNavigation::startGetClose(goal_x[current_goal], goal_y[current_goal]);
             current_state = SM_WAIT_FOR_GOAL_REACHED;
@@ -185,20 +207,36 @@ int main(int argc, char** argv)
             if(collision_detected)
             {
                 collision_detected = false;
-                collision_counter++;
+                collisions[current_goal]++;
             }
-	    traveled_dist += delta_d;
+	    travel_distances[current_goal] += delta_d;
+            theta_changes[current_goal] += delta_t;
+            samples[current_goal]++;
             if(JustinaNavigation::isGlobalGoalReached()) //Flag is changed in the callback
                 current_state = SM_GOAL_REACHED;
             break;
         case SM_GOAL_REACHED:
 	    time_end = ros::Time::now();
-            std::cout << "Tester.->Goal point reached with: " << std::endl;
-	    std::cout << "Collisions: " << collision_counter << "\tDistance: " << traveled_dist;
-	    std::cout << "Time: " << traveling_time << std::endl;
+	    travel_times[current_goal] = (time_end - time_start).toSec();
+            std::cout << "Tester.->Goal reached. Collisions: " << collisions[current_goal] << "\tDistance: ";
+            std::cout << travel_distances[current_goal] << "\tTime: " << travel_times[current_goal] << "\tTheta changes: ";
+            std::cout << theta_changes[current_goal] << "\tSamples: " << samples[current_goal] << std::endl;
             current_goal++;
-	    traveling_time = (time_end - time_start).toSec();
 	    current_state = SM_CHECK_STATUS;
+            break;
+        case SM_SAVE_DATA:
+            std::cout << "Tester.->Saving data to file: " << output_file_path << std::endl;
+            output_stream.open(output_file_path.c_str());
+            output_stream << "Goal_X,\tGoal_Y,\tTime,\tDistance,\tTheta_Changes,\tCollisions,\tSamples" << std::endl;
+            output_stream << std::fixed << std::setprecision(4);
+            for(int i=0; i < goal_x.size(); i++)
+            {
+                output_stream << goal_x[i] << ",\t" << goal_y[i] << ",\t" << travel_times[i] << ",\t" << travel_distances[i];
+                output_stream << ",\t" << theta_changes[i] << ",\t" << collisions[i] << ",\t" << samples[i] << std::endl;
+            }
+            output_stream.close();
+            std::cout << "Tester.->Data saved to file: " << output_file_path << std::endl;
+            task_finished = true;
             break;
         default:
             break;

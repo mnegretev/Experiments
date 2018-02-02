@@ -123,7 +123,7 @@ def main():
     subSpeeds  = rospy.Subscriber("/hardware/mobile_base/speeds",  Float32MultiArray, callback_speeds, queue_size=1);
     subCmdVel  = rospy.Subscriber("/hardware/mobile_base/cmd_vel", Twist, callback_cmd_vel, queue_size=1);
     br   = tf.TransformBroadcaster()
-    rate = rospy.Rate(30);
+    rate = rospy.Rate(20);
 
     #ROBOCLAW CONNECTION
     rc_frontal.comport = port_name_frontal;
