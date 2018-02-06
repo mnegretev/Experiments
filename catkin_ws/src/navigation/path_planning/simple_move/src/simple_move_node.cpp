@@ -93,9 +93,12 @@ geometry_msgs::Twist calculate_speeds(float robot_x, float robot_y, float robot_
 				      float cruise_speed, bool backwards)
 {
     //Control constants
-    float alpha = 0.6548;
-    float beta = 0.1;
-    float max_angular = 0.5;
+    //float alpha = 0.6548;
+    //float beta = 0.1;
+    //float max_angular = 0.5;
+    float alpha = 0.6;
+    float beta = 0.09;
+    float max_angular = 1.0;
 
     //Error calculation
     float angle_error = 0;
@@ -117,8 +120,10 @@ geometry_msgs::Twist calculate_speeds_lateral(float robot_x, float robot_y, floa
 {
     //Control constants
     float alpha = 0.6548;
-    float beta = 0.2;
-    float max_angular = 0.5;
+    //float beta = 0.2;
+    //float max_angular = 0.5;
+    float beta = 0.1;
+    float max_angular = 1.0;
 
     //Error calculation
     float angle_error = atan2(robot_x - goal_x ,goal_y - robot_y) - robot_t;
@@ -140,8 +145,10 @@ geometry_msgs::Twist calculate_speeds_lateral(float robot_x, float robot_y, floa
 geometry_msgs::Twist calculate_speeds(float robot_angle, float goal_angle)
 {
     //Control constants
-    float beta = 0.2;
-    float max_angular = 0.5;
+    //float beta = 0.2;
+    //float max_angular = 0.5;
+    float beta = 0.1;
+    float max_angular = 1.0;
 
     float angle_error = goal_angle - robot_angle;
     if(angle_error >   M_PI) angle_error -= 2*M_PI;
