@@ -16,10 +16,11 @@
     <rosparam file="$(find experiments)/param/costmap.yaml" ns="local_map" />
   </node>
 
+  <param name="map_file" type="str" value=""/>
   <group ns="navigation">
     <group ns="localization">
       <node name="map_server" pkg="map_server" type="map_server" output="screen"
-	    args="$(find knowledge)/navigation/occupancy_grids/robocup_2017.yaml"/>
+	    args="$(find experiments)/data/worlds/$(arg map_file).yaml"/>
       <node name="loc_amcl" pkg="amcl" type="amcl" output="screen" args="scan:=/hardware/scan">
 	<param name="odom_alpha1" value="0.4"/>
 	<param name="odom_alpha2" value="0.4"/>
