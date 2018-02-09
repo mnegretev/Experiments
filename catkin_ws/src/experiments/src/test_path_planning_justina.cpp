@@ -65,18 +65,18 @@ bool read_poses_from_file(std::vector<float>& goal_x, std::vector<float>& goal_y
     
     visualization_msgs::Marker mrkPoints;
     mrkPoints.header.frame_id = "map";
-    mrkPoints.type = visualization_msgs::Marker::LINE_STRIP;
+    mrkPoints.type = visualization_msgs::Marker::SPHERE_LIST;
     mrkPoints.ns = "random_points";
     mrkPoints.id = 0;
     mrkPoints.action = visualization_msgs::Marker::ADD;
     mrkPoints.lifetime = ros::Duration();
-    mrkPoints.color.r = 1.0;
-    mrkPoints.color.g = 0.0;
+    mrkPoints.color.r = 0.0;
+    mrkPoints.color.g = 0.5;
     mrkPoints.color.b = 0.0;
-    mrkPoints.color.a = 0.5;
-    mrkPoints.scale.x = 0.03;
-    mrkPoints.scale.y = 0.03;
-    mrkPoints.scale.z = 0.03;
+    mrkPoints.color.a = 1.0;
+    mrkPoints.scale.x = 0.1;
+    mrkPoints.scale.y = 0.1;
+    mrkPoints.scale.z = 0.1;
 
     mrkPoints.points.resize(goal_x.size() + 1);
     mrkPoints.points[0].x = 0;
@@ -136,7 +136,7 @@ int main(int argc, char** argv)
 	return 0;
     }
 
-    std::string input_file_path = ros::package::getPath("experiments") + "/data/" + input_file + ".mpd";
+    std::string input_file_path = ros::package::getPath("experiments") + "/data/worlds/" + input_file + ".mpd";
     std::vector<float> goal_x, goal_y;
     visualization_msgs::Marker mrkPoints;
     if(!read_poses_from_file(goal_x, goal_y, input_file_path, mrkPoints))

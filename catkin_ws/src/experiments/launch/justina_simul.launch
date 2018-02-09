@@ -1,0 +1,73 @@
+<launch>	
+  <param name="robot_description" command="cat $(find knowledge)/hardware/justina.xml" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+
+  
+  <include file="$(find surge_et_ambula)/launch/justina_hardware.launch">
+    <arg name="simul" default="true"/>
+  </include>	
+
+
+  <group ns="hri">
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find knowledge)/hri/rviz_config.rviz"/>
+    <node name="justina_gui" pkg="justina_gui" type="justina_gui_node" output="screen"
+	  args="-p $(find knowledge)/navigation/"/>
+    <node name="leg_finder" pkg="leg_finder" type="leg_finder_node" args="--hyp" output="screen"/>
+    <node name="human_follower" pkg="human_follower" type="human_follower_node" args="--move_head" output="screen"/>
+  </group>
+
+  
+  <group ns="interoperation">
+    <node name="joystick_teleop" pkg="joystick_teleop" type="joystick_teleop_node.py" output="screen" />
+  </group>
+
+  
+  <group ns="manipulation">
+    <node name="ik_geometric" pkg="ik_geometric" type="ik_geometric_node" output="screen"/>
+    <node name="manip_pln" pkg="manip_pln" type="manip_pln_node" output="screen"
+	  args="-f $(find knowledge)/manipulation/predef_poses/"/>
+  </group>
+
+  <arg name="map_file" default="robocup_2017"/>
+  <arg name="init_x" default="0.0"/>
+  <arg name="init_y" default="0.0"/>
+  <arg name="init_a" default="0.0"/>
+  <group ns="navigation">
+    <group ns="localization">
+      <node name="map_server" pkg="map_server" type="map_server" output="screen"
+	    args="$(find experiments)/data/worlds/$(arg map_file).yaml"/>
+      <node name="loc_amcl" pkg="amcl" type="amcl" output="screen" args="scan:=/hardware/scan">
+	<param name="odom_alpha1" value="0.4"/>
+	<param name="odom_alpha2" value="0.4"/>
+	<param name="odom_alpha3" value="0.4"/>
+	<param name="odom_alpha4" value="0.4"/>
+	<param name="odom_alpha5" value="0.4"/>
+	<param name="initial_pose_x" value="$(arg init_x)"/>
+	<param name="initial_pose_y" value="$(arg init_y)"/>
+	<param name="initial_pose_a" value="$(arg init_a)"/>
+	<param name="update_min_a" value="0.3"/>
+	<param name="laser_min_range" value="0.2"/>
+	<param name="odom_model_type" value="omni"/>
+      </node>
+    </group>  
+    <group ns="path_planning">
+      <node name="simple_move" pkg="simple_move" type="simple_move_node" output="screen" args="--move_head"/>
+      <node name="path_calculator" pkg="path_calculator" type="path_calculator_node" output="screen"/>
+    </group>
+    <group ns="obs_avoidance">
+      <node name="collision_detector" pkg="collision_detector" type="collision_detector_node" output="screen"/>
+    </group>
+    <node name="mvn_pln" pkg="mvn_pln" type="mvn_pln_node" output="screen" args="--max_attempts 25"/>
+  </group>
+
+  
+  <group ns="knowledge">
+    <node name="ltm" pkg="knowledge" type="ltm_node" output="screen"
+	  args="-f $(find knowledge)/navigation/known_locations_robocup_2017.txt"/>
+    <node name="pred_ques" pkg="knowledge" type="pred_ques_node" output="screen"
+	  args="-f $(find knowledge)/speech_recognition/Questions.xml"/>
+    <node name="pred_arms_poses" pkg="knowledge" type="pred_poses_mani_node" output="screen"
+	  args="-f $(find knowledge)/manipulation/predef_poses/"/>
+  </group>
+  
+</launch>

@@ -103,7 +103,7 @@ nav_msgs::OccupancyGrid grow_obstacles(nav_msgs::OccupancyGrid& map, float growD
     }
 
     for(int i=startIdx; i < endIdx; i++)
-        if(map.data[i] > 40) //Then, is an occupied cell
+        if(map.data[i] > 40 || map.data[i] < 0) //Then, is an occupied or unknown cell
             for(int j=0; j < boxSize; j++) //If it is occupied, mark as occupied all neighbors in the neighbor-box
                 newMap.data[i+neighbors[j]] = 100;
 
