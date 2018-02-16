@@ -204,7 +204,7 @@ int main(int argc, char** argv)
                 current_state = SM_SEND_TO_GOAL;
 	    break;
 	case SM_SEND_TO_GOAL:
-            std::cout << "Tester.->Sending robot to goal: " << goal_x[current_goal] << "  " << goal_y[current_goal] << std::endl;
+            std::cout << "Tester.->Sending robot to goal " << current_goal << ": " << goal_x[current_goal] << "  " << goal_y[current_goal] << std::endl;
             collisions[current_goal] = 0;
 	    travel_distances[current_goal] = 0;
             theta_changes[current_goal] = 0;
