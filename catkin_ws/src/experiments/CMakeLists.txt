@@ -143,6 +143,7 @@ include_directories(
 add_executable(test_path_planning_justina src/test_path_planning_justina.cpp)
 add_executable(test_path_planning_nav2d src/test_path_planning_nav2d.cpp)
 add_executable(random_goals_generator src/random_goals_generator.cpp)
+add_executable(path_plotter src/path_plotter.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -155,6 +156,7 @@ add_executable(random_goals_generator src/random_goals_generator.cpp)
 add_dependencies(test_path_planning_justina ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(test_path_planning_nav2d ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(random_goals_generator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(path_plotter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(test_path_planning_justina
@@ -164,6 +166,9 @@ target_link_libraries(test_path_planning_nav2d
   ${catkin_LIBRARIES}
 )
 target_link_libraries(random_goals_generator
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(path_plotter
   ${catkin_LIBRARIES}
 )
 
