@@ -228,10 +228,10 @@ def main():
                 #speed_rear  = -int(speed_rear  * 32767);                                                          
                 #rc_frontal.DutyM1M2(rc_address_frontal, speed_left, speed_right);                                 
                 #rc_lateral.DutyM1M2(rc_address_lateral, speed_front, speed_rear);
-                speed_left  =  int(speed_left  * QPPS_LEFT  * 16.0/35.0);                               
-                speed_right =  int(speed_right * QPPS_RIGHT * 16.0/35.0);                               
-                speed_front = -int(speed_front * QPPS_FRONT);                                           
-                speed_rear  = -int(speed_rear  * QPPS_REAR);                                            
+                speed_left  =  int(0.4*speed_left  * QPPS_LEFT  * 16.0/35.0);                               
+                speed_right =  int(0.4*speed_right * QPPS_RIGHT * 16.0/35.0);                               
+                speed_front = -int(0.4*speed_front * QPPS_FRONT);                                           
+                speed_rear  = -int(0.4*speed_rear  * QPPS_REAR);                                            
                 #rc_frontal.SpeedAccelM1M2(rc_address_frontal, rc_acceleration, speed_left, speed_right);
                 #rc_lateral.SpeedAccelM1M2(rc_address_lateral, rc_acceleration, speed_front, speed_rear);
                 try:
