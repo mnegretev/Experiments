@@ -1,0 +1,61 @@
+<launch>	
+  <param name="robot_description" command="cat $(find knowledge)/hardware/justina.xml" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+  <!-- Filed needed by the nav2d modules -->
+  <rosparam file="$(find experiments)/param/ros.yaml"/>
+  <remap from="/cmd_vel" to="/hardware/mobile_base/cmd_vel"/>
+  
+  <include file="$(find surge_et_ambula)/launch/justina_hardware.launch">
+    <arg name="simul" default="false"/>
+  </include>	
+
+  <!-- Start the Operator to control the simulated robot -->
+  <node name="Operator" pkg="nav2d_operator" type="operator" >
+    <remap from="scan" to="base_scan"/>
+    <rosparam file="$(find experiments)/param/operator.yaml"/>
+    <rosparam file="$(find experiments)/param/costmap.yaml" ns="local_map" />
+  </node>
+
+  <arg name="map_file" default="robocup_2017"/>
+  <arg name="init_x" default="0.0"/>
+  <arg name="init_y" default="0.0"/>
+  <arg name="init_a" default="0.0"/>
+  <group ns="navigation">
+    <group ns="localization">
+      <node name="map_server" pkg="map_server" type="map_server" output="screen"
+	    args="$(find experiments)/data/worlds/$(arg map_file).yaml"/>
+      <node name="loc_amcl" pkg="amcl" type="amcl" output="screen" args="scan:=/hardware/scan">
+	<param name="odom_alpha1" value="0.4"/>
+	<param name="odom_alpha2" value="0.4"/>
+	<param name="odom_alpha3" value="0.4"/>
+	<param name="odom_alpha4" value="0.4"/>
+	<param name="odom_alpha5" value="0.4"/>
+	<param name="initial_pose_x" value="$(arg init_x)"/>
+	<param name="initial_pose_y" value="$(arg init_y)"/>
+	<param name="initial_pose_a" value="$(arg init_a)"/>
+	<param name="update_min_a" value="0.3"/>
+	<param name="laser_min_range" value="0.2"/>
+	<param name="odom_model_type" value="omni"/>
+      </node>
+    </group>
+    <group ns="obs_avoidance">
+      <node name="collision_detector" pkg="collision_detector" type="collision_detector_node" output="screen"/>
+    </group>
+  </group>
+  
+  <!-- Start the Navigator to move the robot autonomously -->
+  <node name="Navigator" pkg="nav2d_navigator" type="navigator">
+    <rosparam file="$(find experiments)/param/navigator.yaml"/>
+  </node>
+  
+  <node name="SetGoal" pkg="nav2d_navigator" type="set_goal_client" />
+  
+  <!-- Start the joystick-driver and remote-controller for operation-->
+  <node name="Joystick" pkg="joy" type="joy_node" />
+  <node name="Remote" pkg="nav2d_remote" type="remote_joy" />
+  
+  <!-- RVIZ to view the visualization -->
+  <group ns="hri">
+    <node name="RVIZ" pkg="rviz" type="rviz" args=" -d $(find experiments)/param/justina_nav2d.rviz" respawn="true"/>
+  </group>
+</launch>

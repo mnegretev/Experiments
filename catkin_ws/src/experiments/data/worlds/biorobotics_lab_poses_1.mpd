@@ -1,0 +1,15 @@
+//Random goal poses generated using the following info:
+//Min X: -8	Min Y: -10	Max X: 6	Max Y: 7	Number of points: 100
+//Map origin: -50  -20	Resolution: 0.05
+//Time of generation: 2018-02-09T03:02:14.821482
+//By the way, the extension .mpd stands for motion planner data.
+//goal_x, goal_y, collisions distance, time, theta changes and samples
+-1.05,		-1.90 
+-0.75,		-2.50 
+-0.60,		2.80  
+-0.95,		-2.40 
+-1.30,		4.60
+2.30,           6.00   
+-0.85,          1.00   
+1.40,           -8.05  
+-2.25,          5.65   
