@@ -31,9 +31,20 @@ int main(int argc, char** argv)
     ros::NodeHandle n;
     ros::Rate loop(10);
 
+    std::string static_map_service = "/navigation/localization/static_map";
+    if(ros::param::has("static_map_service"))
+	ros::param::get("~static_map_service", static_map_service);
     nav_msgs::GetMap srvGetMap;
-    ros::service::waitForService("/navigation/localization/static_map");
-    ros::ServiceClient srvCltGetMap = n.serviceClient<nav_msgs::GetMap>("/navigation/localization/static_map");
+    if(!ros::service::waitForService(static_map_service, ros::Duration(5.0)))
+    {
+	static_map_service = "/static_map";
+	if(!ros::service::waitForService(static_map_service, ros::Duration(5.0)))
+	{
+	    std::cout << "LaserSimulator.->Service for getting map is not available. :'(" << std::endl;
+	    return -1;
+	}
+    }
+    ros::ServiceClient srvCltGetMap = n.serviceClient<nav_msgs::GetMap>(static_map_service);
     srvCltGetMap.call(srvGetMap);
     nav_msgs::OccupancyGrid map = srvGetMap.response.map;
     sensor_msgs::LaserScan scanInfo;

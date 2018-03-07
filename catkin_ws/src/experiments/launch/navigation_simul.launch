@@ -1,0 +1,49 @@
+<launch>	
+  <param name="robot_description" command="cat $(find knowledge)/hardware/justina.xml" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+
+  <remap from="/hardware/mobile_base/cmd_vel" to="/cmd_vel"/>
+  
+  <include file="$(find surge_et_ambula)/launch/justina_hardware.launch">
+    <arg name="simul" default="true"/>
+  </include>	
+
+
+  <group ns="hri">
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find knowledge)/hri/rviz_navigation_config.rviz"/>
+  </group>
+
+  
+  <group ns="interoperation">
+    <node name="joystick_teleop" pkg="joystick_teleop" type="joystick_teleop_node.py" output="screen" />
+  </group>
+
+  <arg name="map_file" default="robocup_2017"/>
+  <arg name="init_x" default="0.0"/>
+  <arg name="init_y" default="0.0"/>
+  <arg name="init_a" default="0.0"/>
+  <node name="map_server" pkg="map_server" type="map_server" output="screen"
+	args="$(find experiments)/data/worlds/$(arg map_file).yaml"/>
+  <node name="loc_amcl" pkg="amcl" type="amcl" output="screen" args="scan:=/hardware/scan">
+    <param name="odom_alpha1" value="0.4"/>
+    <param name="odom_alpha2" value="0.4"/>
+    <param name="odom_alpha3" value="0.4"/>
+    <param name="odom_alpha4" value="0.4"/>
+    <param name="odom_alpha5" value="0.4"/>
+    <param name="initial_pose_x" value="$(arg init_x)"/>
+    <param name="initial_pose_y" value="$(arg init_y)"/>
+    <param name="initial_pose_a" value="$(arg init_a)"/>
+    <param name="update_min_a" value="0.3"/>
+    <param name="laser_min_range" value="0.2"/>
+    <param name="odom_model_type" value="omni"/>
+  </node>
+  
+  <node name="move_base" pkg="move_base" type="move_base" output="screen">
+    <rosparam file="$(find experiments)/navigation_params/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+    <rosparam file="$(find experiments)/navigation_params/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+    <rosparam file="$(find experiments)/navigation_params/global_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find experiments)/navigation_params/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find experiments)/navigation_params/base_local_planner_params.yaml" command="load"/>
+  </node>
+  
+</launch>
