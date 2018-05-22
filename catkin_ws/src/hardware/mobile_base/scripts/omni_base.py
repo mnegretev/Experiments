@@ -8,6 +8,7 @@ from std_msgs.msg import Empty
 from std_msgs.msg import Float32
 from std_msgs.msg import Float32MultiArray
 from nav_msgs.msg import Odometry
+from std_msgs.msg import Bool
 from geometry_msgs.msg import TransformStamped
 from geometry_msgs.msg import Twist
 from hardware_tools import roboclaw
@@ -19,6 +20,8 @@ rc_address_lateral  = 0x80;
 rc_frontal = roboclaw.Roboclaw("/dev/ttyACM0", 38400); #Roboclaw controling motors for frontal movement (left and right)
 rc_lateral = roboclaw.Roboclaw("/dev/ttyACM1", 38400); #Roboclaw controling motors for lateral movement (front and rear)
 rc_acceleration = 1000000;
+global simul;
+simul = False;
 
 def print_help():
     print "MOBILE BASE BY MARCOSOFT. Options:"
@@ -71,9 +74,16 @@ def callback_cmd_vel(msg):
     speed_rear  = msg.linear.y - msg.angular.z * base_diameter/2.0
     new_data = True;
 
+def callback_simulated(msg):
+    global simul;
+    simul = msg.data;
+        
+
 def calculate_odometry(pos_x, pos_y, pos_theta, enc_left, enc_right, enc_front, enc_rear):
-    TICKS_PER_METER_LATERAL = 336857.5; #Ticks per meter for the slow motors (front and rear)
-    TICKS_PER_METER_FRONTAL = 158891.2; #Ticks per meter for the fast motors (left and right)
+    #TICKS_PER_METER_LATERAL = 336857.5; #Ticks per meter for the slow motors (front and rear)
+    #TICKS_PER_METER_FRONTAL = 158891.2; #Ticks per meter for the fast motors (left and right)
+    TICKS_PER_METER_LATERAL = 158891.2; #Ticks per meter for the slow motors (front and rear)
+    TICKS_PER_METER_FRONTAL = 164352.1; #Ticks per meter for the fast motors (left and right)
     enc_left  /= TICKS_PER_METER_FRONTAL;
     enc_right /= TICKS_PER_METER_FRONTAL;
     enc_front /= TICKS_PER_METER_LATERAL;
@@ -94,6 +104,7 @@ def calculate_odometry(pos_x, pos_y, pos_theta, enc_left, enc_right, enc_front, 
     return (pos_x, pos_y, pos_theta);
 
 
+
 def main():
     print "MobileBase.-> INITIALIZING THE AMAZING MOBILE BASE NODE BY MARCOSOFT..."
 
@@ -101,7 +112,11 @@ def main():
     
     port_name_frontal = "/dev/ttyACM0";
     port_name_lateral = "/dev/ttyACM1";
+    global simul
     simul = False
+    
+    if rospy.has_param('~simul'):
+        simul = rospy.get_param('~simul')
     
     if rospy.has_param('~port1'):
         port_name_frontal = rospy.get_param('~port1')
@@ -114,16 +129,14 @@ def main():
         print_help();
         sys.exit();
 
-    if rospy.has_param('~simul'):
-        simul = rospy.get_param('~simul')
-
     #ROS CONNECTION
     pubBattery = rospy.Publisher("mobile_base/base_battery", Float32, queue_size = 1);
     subStop    = rospy.Subscriber("robot_state/stop", Empty, callback_stop, queue_size=1);
     subSpeeds  = rospy.Subscriber("/hardware/mobile_base/speeds",  Float32MultiArray, callback_speeds, queue_size=1);
     subCmdVel  = rospy.Subscriber("/hardware/mobile_base/cmd_vel", Twist, callback_cmd_vel, queue_size=1);
+    subSimul   = rospy.Subscriber("/simulated", Bool, callback_simulated, queue_size = 1);
     br   = tf.TransformBroadcaster()
-    rate = rospy.Rate(20);
+    rate = rospy.Rate(30);
 
     #ROBOCLAW CONNECTION
     rc_frontal.comport = port_name_frontal;
@@ -228,10 +241,10 @@ def main():
                 #speed_rear  = -int(speed_rear  * 32767);                                                          
                 #rc_frontal.DutyM1M2(rc_address_frontal, speed_left, speed_right);                                 
                 #rc_lateral.DutyM1M2(rc_address_lateral, speed_front, speed_rear);
-                speed_left  =  int(0.6*speed_left  * QPPS_LEFT  * 16.0/35.0);                               
-                speed_right =  int(0.6*speed_right * QPPS_RIGHT * 16.0/35.0);                               
-                speed_front = -int(0.6*speed_front * QPPS_FRONT);                                           
-                speed_rear  = -int(0.6*speed_rear  * QPPS_REAR);                                            
+                speed_left  =  int(speed_left  * QPPS_LEFT  * 16.0/35.0);                               
+                speed_right =  int(speed_right * QPPS_RIGHT * 16.0/35.0);                               
+                speed_front = -int(speed_front * QPPS_FRONT * 16.0/35.0);                                           
+                speed_rear  = -int(speed_rear  * QPPS_REAR * 16.0/35.0);                                            
                 #rc_frontal.SpeedAccelM1M2(rc_address_frontal, rc_acceleration, speed_left, speed_right);
                 #rc_lateral.SpeedAccelM1M2(rc_address_lateral, rc_acceleration, speed_front, speed_rear);
                 try:
@@ -258,6 +271,7 @@ def main():
             encoder_last_right = encoder_right
             encoder_last_front = encoder_front
             encoder_last_rear  = encoder_rear
+            # print "Encoders delta: " + str(encoder_left) + "\t" + str(encoder_right);
         else:
             encoder_left = speed_left * 0.05 * QPPS_LEFT
             encoder_right = speed_right * 0.05 * QPPS_RIGHT
