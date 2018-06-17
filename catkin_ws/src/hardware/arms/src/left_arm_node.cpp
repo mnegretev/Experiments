@@ -136,7 +136,7 @@ int main(int argc, char ** argv){
     for(int i = 0; i < 9; i++)
         ids.push_back(i);
     DynamixelManager dynamixelManager;
-    dynamixelManager.enableInfoLevelDebug();
+    // dynamixelManager.enableInfoLevelDebug();
     dynamixelManager.init(port, baudRate, bulkEnable, ids, syncWriteEnable);
 
     uint16_t curr_position[9] = {1543, 1600, 1800, 2100, 2048, 1800, 1050, 2440, 2680};
@@ -308,7 +308,7 @@ int main(int argc, char ** argv){
 
     std::cout << "left_arm_pose.->Shutdowning the left arm node" << std::endl;
     std::cout << "left_arm_pose.->Writing the zero_arm init pose" << std::endl;
-    for(int i = 0; i < 7; i++){
+    for(int i = 0; i < 6; i++){
         uint16_t zeroPose = (uint16_t) zero_arm[i];
         dynamixelManager.setGoalPosition(i, zeroPose);
         dynamixelManager.setMovingSpeed(i, 30);
@@ -323,7 +323,7 @@ int main(int argc, char ** argv){
     boost::posix_time::ptime prev = boost::posix_time::second_clock::local_time();
     boost::posix_time::ptime curr = prev;
     do{
-        for(int i = 0; i < 7; i++){
+        for(int i = 0; i < 6; i++){
             if(!validatePosition[i]){
                 unsigned short position;
                 if(bulkEnable)
@@ -338,7 +338,7 @@ int main(int argc, char ** argv){
             }
         }
         curr = boost::posix_time::second_clock::local_time();
-    }while(countValidate < 7 && (curr - prev).total_milliseconds() < 7500);
+    }while(countValidate < 6 && (curr - prev).total_milliseconds() < 7500);
 
     std::cout << "left_arm_node.->The arm have reached the init pose" << std::endl;
 
