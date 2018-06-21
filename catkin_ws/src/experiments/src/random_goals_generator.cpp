@@ -170,7 +170,7 @@ int main(int argc, char** argv)
     nav_msgs::GetMap srvGetMap;
     srvCltGetMap.call(srvGetMap);
     nav_msgs::OccupancyGrid map = srvGetMap.response.map;
-    map = grow_obstacles(map, 0.25);
+    map = grow_obstacles(map, 0.65);
 
     std::string file_path = ros::package::getPath("experiments") + "/data/" + file_name + ".mpd";
     
