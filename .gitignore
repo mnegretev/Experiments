@@ -6,3 +6,5 @@
 catkin_ws/devel/
 catkin_ws/build/
 catkin_ws/src/CMakeLists.txt
+*octave-workspace
+*.Rhistory
