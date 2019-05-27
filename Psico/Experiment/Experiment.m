@@ -69,7 +69,7 @@ trajectory = trajectory(screen_cx, screen_cy, rad);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 KbName('UnifyKeyNames');
-key_space  = KbName('space');
+key_space  = KbName('space';
 key_escape = KbName('ESCAPE');
 key_left   = KbName('LeftArrow');
 key_right  = KbName('RightArrow');
@@ -163,13 +163,14 @@ while sm_state != SM_DEMO_END
     Screen('TextSize', main_window, 25);
     switch sm_state
       case SM_DEMO_INIT
-        DrawFormattedText(main_window, ['En esta sección se te dará ' ...
-                            'una serie de instrucciones.'] , ...
-                          screen_origin_x + x_8,y_4,color_text);
-        DrawFormattedText(main_window, ['Usa las siguientes teclas para navegar en ellas.'],screen_origin_x+x_8,y_4+y_16, color_text);
-        DrawFormattedText(main_window ,['Presiona la flecha derecha ' ...
+        DrawFormattedText(main_window, [], 
+        screen_origin_x + x_8,y_4,color_text);
+        DrawFormattedText(main_window, ['Usa las siguientes teclas ' ...
+                            'para naveg ar en el[21~las.'],screen_origin_x+x_8,y_4+y_16, color_text);
+        DrawFormattedText(main_window ,['Presiona la flecha derecha  ' ...
                             'para continuar'] , screen_origin_x+x_8+x_16,y_4+y_8+y_16,color_text);
-        DrawFormattedText(main_window ,['Presiona la flecha izquierda para regresar'] ,screen_origin_x+x_8+x_16,ym+y_16,color_text);
+        DrawFormattedText(main_window ,['Presiona la flecha izquierda ' ...
+                            'para  regresar'] ,screen_origin_x+x_8+x_16,ym+y_16,color_text);
         DrawFormattedText(main_window ,['Presiona esc para salir de la tarea'] ,screen_origin_x+x_8+x_16,ym+y_8+y_16,color_text);
         Screen('DrawTexture',main_window, tex_r_arrow,[],mrect(screen_origin_x+xm+x_8+x_16, y_4+y_8+y_32+y_64,x_64+x_128));
         Screen('DrawTexture',main_window, tex_l_arrow,[],mrect(screen_origin_x+xm+x_8+x_16,ym+y_32+y_128,x_64+x_128));
