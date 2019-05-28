@@ -37,7 +37,6 @@ screen_cx = screen_w/2
 screen_cy = screen_h/2
 screen_w = 1200
 screen_h = 1600
-screen_origin_x = 1367
 
 %I think this loop generates all ship positions that will be used
 %for the whole experiment. But I'm not sure.
@@ -69,7 +68,7 @@ trajectory = trajectory(screen_cx, screen_cy, rad);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 KbName('UnifyKeyNames');
-key_space  = KbName('space';
+key_space  = KbName('space');
 key_escape = KbName('ESCAPE');
 key_left   = KbName('LeftArrow');
 key_right  = KbName('RightArrow');
@@ -88,24 +87,6 @@ color_navy   = [  0   0 128];
 color_bg     = color_black;
 color_text   = color_white;
 
-%Standarize position on the screen
-% X AXIS
-xm    = screen_w/2;
-x_4   = xm/2;
-x_8   = x_4/2;
-x_16  = x_8/2;
-x_32  = x_16/2;
-x_64  = x_32/2;
-x_128 = x_64/2;
-
-ym    = screen_h/2;
-y_4   = ym/2;
-y_8   = y_4/2;
-y_8   = y_4/2;
-y_16  = y_8/2;
-y_32  = y_16/2;
-y_64  = y_32/2;
-y_128 = y_64/2;
 %SIZE dots of trajectory
 dots_size = 3;
 
@@ -157,31 +138,39 @@ tex_demo_11 = Screen('MakeTexture', main_window, img_demo_11);
 tex_demo_12 = Screen('MakeTexture', main_window, img_demo_12);
 
 SM_Definitions;
-sm_state = SM_DEMO_INIT;
+sm_state = SM_DEMO_SHOW_EARTH;
 
 while sm_state != SM_DEMO_END
-    Screen('TextSize', main_window, 25);
-    switch sm_state
-      case SM_DEMO_INIT
-        DrawFormattedText(main_window, [], 
-        screen_origin_x + x_8,y_4,color_text);
-        DrawFormattedText(main_window, ['Usa las siguientes teclas ' ...
-                            'para naveg ar en el[21~las.'],screen_origin_x+x_8,y_4+y_16, color_text);
-        DrawFormattedText(main_window ,['Presiona la flecha derecha  ' ...
-                            'para continuar'] , screen_origin_x+x_8+x_16,y_4+y_8+y_16,color_text);
-        DrawFormattedText(main_window ,['Presiona la flecha izquierda ' ...
-                            'para  regresar'] ,screen_origin_x+x_8+x_16,ym+y_16,color_text);
-        DrawFormattedText(main_window ,['Presiona esc para salir de la tarea'] ,screen_origin_x+x_8+x_16,ym+y_8+y_16,color_text);
-        Screen('DrawTexture',main_window, tex_r_arrow,[],mrect(screen_origin_x+xm+x_8+x_16, y_4+y_8+y_32+y_64,x_64+x_128));
-        Screen('DrawTexture',main_window, tex_l_arrow,[],mrect(screen_origin_x+xm+x_8+x_16,ym+y_32+y_128,x_64+x_128));
-        Screen('DrawTexture',main_window, tex_escape ,[],mrect(screen_origin_x+xm+x_8+x_16,ym+y_8+y_32+y_128,x_64+x_128));
-        Screen(main_window, 'Flip');
-        [secs, key_code] = KbStrokeWait;
-        if key_code(key_right)
-            sm_state = SM_DEMO_END;
-        end 
-      otherwise
-        sm_state = SM_DEMO_END;
+  Screen('TextSize', main_window, 25);
+  switch sm_state
+    case SM_DEMO_INIT
+      DrawFormattedText(main_window, SMD_INIT_Txt1_t, SMD_INIT_Txt1_x, SMD_INIT_Txt1_y, color_text);
+      DrawFormattedText(main_window, SMD_INIT_Txt2_t, SMD_INIT_Txt2_x, SMD_INIT_Txt2_y, color_text);
+      DrawFormattedText(main_window, SMD_INIT_Txt3_t, SMD_INIT_Txt3_x, SMD_INIT_Txt3_y, color_text);
+      DrawFormattedText(main_window, SMD_INIT_Txt4_t, SMD_INIT_Txt4_x, SMD_INIT_Txt4_y, color_text);
+      DrawFormattedText(main_window, SMD_INIT_Txt5_t, SMD_INIT_Txt5_x, SMD_INIT_Txt5_y, color_text);
+      Screen('DrawTexture',main_window, tex_r_arrow,[],mrect(screen_origin_x+xm+x_8+x_16, y_4+y_8+y_16+y_128, x_64+x_128));
+      Screen('DrawTexture',main_window, tex_l_arrow,[],mrect(screen_origin_x+xm+x_8+x_16, ym +y_16+y_128    , x_64+x_128));
+      Screen('DrawTexture',main_window, tex_escape ,[],mrect(screen_origin_x+xm+x_8+x_16, ym +y_8+y_16+y_128, x_64+x_128));
+      Screen(main_window, 'Flip');
+      [secs, key_code] = KbStrokeWait;
+      if key_code(key_right)
+         sm_state = SM_DEMO_SHOW_EARTH;
+      end
+    case SM_DEMO_SHOW_EARTH
+      DrawFormattedText(main_window, SMD_SHOW_EARTH_Txt1_t, SMD_SHOW_EARTH_Txt1_x, SMD_SHOW_EARTH_Txt1_y, color_text);
+      Screen('DrawTexture', main_window, tex_earth,[],[screen_origin_x,0,screen_origin_x + screen_w,screen_w]);
+      Screen('DrawTexture', main_window, tex_l_arrow, [], mrect(screen_origin_x + x_4+x_8, ym+y_4+y_8+y_32, x_64+x_128));
+      Screen('DrawTexture', main_window, tex_r_arrow, [], mrect(screen_origin_x + xm+x_8 , ym+y_4+y_8+y_32, x_64+x_128));
+      Screen(main_window, 'Flip');
+      [secs, key_code] = KbStrokeWait;
+      if key_code(key_right)
+         sm_state = SM_DEMO_END;
+      end
+    otherwise
+      
+      sm_state = SM_DEMO_END;
+      
     end
     if key_code(key_escape)
         sm_state = SM_DEMO_END;

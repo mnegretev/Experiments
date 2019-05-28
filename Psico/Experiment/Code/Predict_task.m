@@ -246,7 +246,7 @@ while i<n_instructions
         im = imread('D8.PNG'); D1 = Screen('MakeTexture', mainwin, im);
         Screen('DrawTexture', mainwin, D1,[],[0,0,length1,height1]);
         DrawFormattedText(mainwin,['En el experimento se mostrará la imagen del planeta tierra en el espacio.'] ,'center',y_16+y_32,textcolor);
-        Screen('DrawTexture',mainwin, left_arrow3,[],mrect(x_4+x_8,ym+y_4+y_8+y_32,x_64+x_128));
+        Screen('DrawTexture',mainwin, left_arrow3,[], mrect(x_4+x_8,ym+y_4+y_8+y_32,x_64+x_128));
         Screen('DrawTexture',mainwin, right_arrow2,[],mrect(xm+x_8,ym+y_4+y_8+y_32,x_64+x_128));
         Screen(mainwin, 'Flip');
         
