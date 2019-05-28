@@ -14,7 +14,6 @@ SM_DEMO_GO_AHEAD       = 13;
 SM_DEMO_END            = 14;
 
 %Standarize position on the screen
-screen_origin_x = 1367
 xm    = screen_w/2;
 x_4   = xm/2;
 x_8   = x_4/2;
