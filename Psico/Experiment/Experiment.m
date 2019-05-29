@@ -35,10 +35,10 @@ screen_w  = scr_size(3);
 screen_h  = scr_size(4);
 screen_cx = screen_w/2
 screen_cy = screen_h/2
-%screen_w = 1200
-%screen_h = 1600
-%screen_origin_x = 1367
-screen_origin_x = 0
+screen_w = 1200
+screen_h = 1600
+screen_origin_x = 1367
+%screen_origin_x = 0
 
 %I think this loop generates all ship positions that will be used
 %for the whole experiment. But I'm not sure.
@@ -144,6 +144,7 @@ sm_state = SM_DEMO_SHOW_EARTH;
 while sm_state != SM_DEMO_END
   Screen('TextSize', main_window, 25);
   switch sm_state
+         
     case SM_DEMO_INIT
       DrawFormattedText(main_window, SMD_INIT_Txt1_t, SMD_INIT_Txt1_x, SMD_INIT_Txt1_y, color_text);
       DrawFormattedText(main_window, SMD_INIT_Txt2_t, SMD_INIT_Txt2_x, SMD_INIT_Txt2_y, color_text);
@@ -158,6 +159,7 @@ while sm_state != SM_DEMO_END
       if key_code(key_right)
          sm_state = SM_DEMO_SHOW_EARTH;
       end
+      
     case SM_DEMO_SHOW_EARTH
       DrawFormattedText(main_window, SMD_SHOW_EARTH_Txt1_t, SMD_SHOW_EARTH_Txt1_x, SMD_SHOW_EARTH_Txt1_y, color_text);
       Screen('DrawTexture', main_window, tex_demo_02, [], [screen_cx - 640, screen_cy - 360, screen_cx + 640, screen_cy + 360]);
@@ -170,8 +172,9 @@ while sm_state != SM_DEMO_END
       elseif key_code(key_right)
 	sm_state = SM_DEMO_SHOW_UFO;
       end
+      
     case SM_DEMO_SHOW_UFO
-      DrawFormattedText(main_window,['Un objeto volador no Identificado (OVNI) orbitará alrededor de ella.'] ,'center',y_16+y_32,color_text);
+      DrawFormattedText(main_window,SMD_SHOW_UFO_Txt1 ,'center',y_16+y_32,color_text);
       Screen('DrawTexture', main_window, tex_demo_03, [], [screen_cx - 640, screen_cy - 360, screen_cx + 640, screen_cy + 360]);
       Screen('DrawTexture', main_window, tex_l_arrow, [], mrect(screen_origin_x + x_4+x_8, ym+y_4+y_8+y_32, x_64+x_128));
       Screen('DrawTexture', main_window, tex_r_arrow, [], mrect(screen_origin_x + xm+x_8 , ym+y_4+y_8+y_32, x_64+x_128));
@@ -182,8 +185,9 @@ while sm_state != SM_DEMO_END
       elseif key_code(key_right)
 	sm_state = SM_DEMO_SHOW_PATH
       end
+      
     case SM_DEMO_SHOW_PATH
-      DrawFormattedText(main_window,['Su trayectoria estará indicada con un círculo punteado.'] ,'center',y_16+y_32,textcolor);
+      DrawFormattedText(main_window,['Su trayectoria estará indicada con un círculo punteado.'] ,'center',y_16+y_32,color_text);
       Screen('DrawTexture', main_window, tex_demo_04, [], [screen_cx - 640, screen_cy - 360, screen_cx + 640, screen_cy + 360]);
       Screen('DrawTexture', main_window, tex_l_arrow, [], mrect(screen_origin_x + x_4+x_8, ym+y_4+y_8+y_32, x_64+x_128));
       Screen('DrawTexture', main_window, tex_r_arrow, [], mrect(screen_origin_x + xm+x_8 , ym+y_4+y_8+y_32, x_64+x_128));
@@ -194,8 +198,9 @@ while sm_state != SM_DEMO_END
       elseif key_code(key_right)
 	sm_state = SM_DEMO_EXPLAIN_TASK
       end
+      
     case SM_DEMO_EXPLAIN_TASK
-      DrawFormattedText(main_window,['¡Y tu tarea es predecir su posición exacta en cada momento!'] ,'center',y_16+y_32,textcolor);
+      DrawFormattedText(main_window, SMD_EXPLAIN_TASK_Txt1 ,'center',y_16+y_32,color_text);
       Screen('DrawTexture', main_window, tex_demo_05, [], [screen_cx - 640, screen_cy - 360, screen_cx + 640, screen_cy + 360]);
       Screen('DrawTexture', main_window, tex_l_arrow, [], mrect(screen_origin_x + x_4+x_8, ym+y_4+y_8+y_32, x_64+x_128));
       Screen('DrawTexture', main_window, tex_r_arrow, [], mrect(screen_origin_x + xm+x_8 , ym+y_4+y_8+y_32, x_64+x_128));
@@ -206,9 +211,10 @@ while sm_state != SM_DEMO_END
       elseif key_code(key_right)
 	sm_state = SM_DEMO_EXPLAIN_START
       end
+      
     case SM_DEMO_EXPLAIN_START
-      DrawFormattedText(main_window,['El experimento comienza cuando el OVNI se muestra en algún punto de su trayectoria.'] ,'center',y_16+y_32,textcolor);
-      DrawFormattedText(main_window,['Ejemplo:'] ,x_8,y_4,textcolor);
+      DrawFormattedText(main_window,SMD_EXPLAIN_START_Txt1 ,'center',y_16+y_32, color_text);
+      DrawFormattedText(main_window,['Ejemplo:'] ,x_8,y_4,color_text);
       Screen('DrawTexture', main_window, tex_demo_05, [], [screen_cx - 640, screen_cy - 360, screen_cx + 640, screen_cy + 360]);
       Screen('DrawTexture', main_window, tex_l_arrow, [], mrect(screen_origin_x + x_4+x_8, ym+y_4+y_8+y_32, x_64+x_128));
       Screen('DrawTexture', main_window, tex_r_arrow, [], mrect(screen_origin_x + xm+x_8 , ym+y_4+y_8+y_32, x_64+x_128));
@@ -219,7 +225,13 @@ while sm_state != SM_DEMO_END
       elseif key_code(key_right)
 	sm_state = SM_DEMO_DISAPPEAR_UFO
       end
+      
     case SM_DEMO_DISAPPEAR_UFO
+      DrawFormattedText(main_window,['Después de un tiempo breve, éste desaparecerá.'] ,'center',y_16+y_32,color_text);
+      DrawFormattedText(main_window,['Ejemplo:'] ,x_8,y_4,color_text);
+      Screen('DrawTexture', main_window, tex_demo_07, [], [screen_cx - 640, screen_cy - 360, screen_cx + 640, screen_cy + 360]);
+      Screen('DrawTexture', main_window, tex_l_arrow, [], mrect(screen_origin_x + x_4+x_8, ym+y_4+y_8+y_32, x_64+x_128));
+      Screen('DrawTexture', main_window, tex_r_arrow, [], mrect(screen_origin_x + xm+x_8 , ym+y_4+y_8+y_32, x_64+x_128));
       Screen(main_window, 'Flip');
       [secs, key_code] = KbStrokeWait;
       if key_code(key_left)
@@ -227,7 +239,14 @@ while sm_state != SM_DEMO_END
       elseif key_code(key_right)
 	sm_state = SM_DEMO_TELL_CLICK
       end
+      
     case SM_DEMO_TELL_CLICK
+      DrawFormattedText(main_window,SMD_TELL_CLICK_Txt1 ,'center',y_16+y_32,color_text);
+      DrawFormattedText(main_window,SMD_TELL_CLICK_Txt2 ,'center',y_8      ,color_text);
+      DrawFormattedText(main_window,['Ejemplo:'] ,x_8,y_4,color_text);
+      Screen('DrawTexture', main_window, tex_demo_08, [], [screen_cx - 640, screen_cy - 360, screen_cx + 640, screen_cy + 360]);
+      Screen('DrawTexture', main_window, tex_l_arrow, [], mrect(screen_origin_x + x_4+x_8, ym+y_4+y_8+y_32, x_64+x_128));
+      Screen('DrawTexture', main_window, tex_r_arrow, [], mrect(screen_origin_x + xm+x_8 , ym+y_4+y_8+y_32, x_64+x_128));
       Screen(main_window, 'Flip');
       [secs, key_code] = KbStrokeWait;
       if key_code(key_left)
@@ -235,7 +254,13 @@ while sm_state != SM_DEMO_END
       elseif key_code(key_right)
 	sm_state = SM_DEMO_SHOW_CLICK_POS
       end
+        
     case SM_DEMO_SHOW_CLICK_POS
+      DrawFormattedText(main_window,SMD_SHOW_CLICK_POS_Txt1 ,'center',y_16+y_32,color_text);
+      DrawFormattedText(main_window,SMD_SHOW_CLICK_POS_Txt2 ,'center',y_8      ,color_text);
+      Screen('DrawTexture', main_window, tex_demo_09, [], [screen_cx - 640, screen_cy - 360, screen_cx + 640, screen_cy + 360]);
+      Screen('DrawTexture', main_window, tex_l_arrow, [], mrect(screen_origin_x + x_4+x_8, ym+y_4+y_8+y_32, x_64+x_128));
+      Screen('DrawTexture', main_window, tex_r_arrow, [], mrect(screen_origin_x + xm+x_8 , ym+y_4+y_8+y_32, x_64+x_128));
       Screen(main_window, 'Flip');
       [secs, key_code] = KbStrokeWait;
       if key_code(key_left)
@@ -243,7 +268,12 @@ while sm_state != SM_DEMO_END
       elseif key_code(key_right)
 	sm_state = SM_DEMO_EXPLAIN_REPEAT
       end
+      
     case SM_DEMO_EXPLAIN_REPEAT
+      DrawFormattedText(main_window, SMD_EXPLAIN_REPEAT_Txt1, 'center',y_16+y_32,color_text);
+      Screen('DrawTexture', main_window, tex_demo_09, [], [screen_cx - 640, screen_cy - 360, screen_cx + 640, screen_cy + 360]);
+      Screen('DrawTexture', main_window, tex_l_arrow, [], mrect(screen_origin_x + x_4+x_8, ym+y_4+y_8+y_32, x_64+x_128));
+      Screen('DrawTexture', main_window, tex_r_arrow, [], mrect(screen_origin_x + xm+x_8 , ym+y_4+y_8+y_32, x_64+x_128));
       Screen(main_window, 'Flip');
       [secs, key_code] = KbStrokeWait;
       if key_code(key_left)
@@ -251,7 +281,13 @@ while sm_state != SM_DEMO_END
       elseif key_code(key_right)
 	sm_state = SM_DEMO_UFO_COLOR
       end
+      
     case SM_DEMO_UFO_COLOR
+      DrawFormattedText(main_window,SMD_UFO_COLOR_Txt1 ,'center',y_16+y_32, color_text);
+      DrawFormattedText(main_window,SMD_UFO_COLOR_Txt2 ,'center',y_8      , color_text);
+      Screen('DrawTexture', main_window, tex_demo_11, [], [screen_cx - 640, screen_cy - 360, screen_cx + 640, screen_cy + 360]);
+      Screen('DrawTexture', main_window, tex_l_arrow, [], mrect(screen_origin_x + x_4+x_8, ym+y_4+y_8+y_32, x_64+x_128));
+      Screen('DrawTexture', main_window, tex_r_arrow, [], mrect(screen_origin_x + xm+x_8 , ym+y_4+y_8+y_32, x_64+x_128));
       Screen(main_window, 'Flip');
       [secs, key_code] = KbStrokeWait;
       if key_code(key_left)
@@ -259,7 +295,12 @@ while sm_state != SM_DEMO_END
       elseif key_code(key_right)
 	sm_state = SM_DEMO_EXPLAIN_CIRCLE
       end
+      
     case SM_DEMO_EXPLAIN_CIRCLE
+      DrawFormattedText(main_window,SMD_EXPLAIN_CIRCLE_Txt1 ,'center',y_16+y_32, color_text);
+      Screen('DrawTexture', main_window, tex_demo_12, [], [screen_cx - 640, screen_cy - 360, screen_cx + 640, screen_cy + 360]);
+      Screen('DrawTexture', main_window, tex_l_arrow, [], mrect(screen_origin_x + x_4+x_8, ym+y_4+y_8+y_32, x_64+x_128));
+      Screen('DrawTexture', main_window, tex_r_arrow, [], mrect(screen_origin_x + xm+x_8 , ym+y_4+y_8+y_32, x_64+x_128));
       Screen(main_window, 'Flip');
       [secs, key_code] = KbStrokeWait;
       if key_code(key_left)
@@ -267,7 +308,11 @@ while sm_state != SM_DEMO_END
       elseif key_code(key_right)
 	sm_state = SM_DEMO_GO_AHEAD
       end
+      
     case SM_DEMO_GO_AHEAD
+      DrawFormattedText(main_window,['Presiona la flecha derecha para iniciar el entrenamiento'] ,'center',ym+y_8, color_text);
+      Screen('TextSize', main_window, 50);
+      DrawFormattedText(main_window,['¡Practica un poco!'] ,'center','center', color_text);
       Screen(main_window, 'Flip');
       [secs, key_code] = KbStrokeWait;
       if key_code(key_left)
