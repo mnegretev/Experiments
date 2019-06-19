@@ -71,3 +71,10 @@ SMD_UFO_COLOR_Txt1 = ['Si predices adecuadamente la posición del OVNI, éste se
 SMD_UFO_COLOR_Txt2 = ['De lo contrario, no cambiará de color.'];
 
 SMD_EXPLAIN_CIRCLE_Txt1 = ['Mientras el OVNI aparezca dentro del círculo rojo, será considerado como un acierto.'];
+
+SM_PRACTICE_INIT        = 0
+SM_PRACTICE_SHOW_UFO    = 1;
+SM_PRACTICE_WAIT_CLICK  = 2;
+SM_PRACTICE_SHOW_RESULT = 3;
+SM_PRACTICE_END         = 4;
+

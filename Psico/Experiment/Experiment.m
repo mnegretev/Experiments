@@ -12,7 +12,7 @@
 
 %Number of blocks, number of trials per block and radius
 n_blocks = 4;
-rad      = 330;
+trajectory_radius = 330%420;
 n_trials = 300;
 randn('seed',time());
 subject_name = 'MarkTheMagnificent'; %input('Please input the subject name: ','s');
@@ -53,8 +53,8 @@ for i=1:n_blocks
     end
     
     %XY in screen coordinates
-    xo = screen_cx + rad.*cos(r);
-    yo = screen_cy + rad.*sin(r);
+    xo = screen_cx + trajectory_radius.*cos(r);
+    yo = screen_cy + trajectory_radius.*sin(r);
     
     block_theta        (:,i) = r;
     block_observationsX(:,i) = xo;
@@ -63,7 +63,7 @@ for i=1:n_blocks
     block_velocity     (:,i) = V;
     block_vdirection   (:,i) = dv;
 end
-trajectory = trajectory(screen_cx, screen_cy, rad);
+trajectory_xy = trajectory(screen_cx, screen_cy, trajectory_radius);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                          Screen and keyboard settings
@@ -89,22 +89,20 @@ color_navy   = [  0   0 128];
 color_bg     = color_black;
 color_text   = color_white;
 
-%SIZE dots of trajectory
-dots_size = 3;
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                               Images
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Key images
 [img_l_arrow, map, alpha_l_arrow] = imread('Figures/left_arrow.png' );
 [img_r_arrow, map, alpha_r_arrow] = imread('Figures/right_arrow.png');
 [img_ufo_w  , map, alpha_ufo_w  ] = imread('Figures/ufo_white.png');
 [img_ufo_r  , map, alpha_ufo_r  ] = imread('Figures/ufo_red.png');
+[img_earth  , map, alpha_earth  ] = imread('Figures/Earth.png');
 img_l_arrow(:,:,4) = alpha_l_arrow;
 img_r_arrow(:,:,4) = alpha_r_arrow;
 img_ufo_w  (:,:,4) = alpha_ufo_w  ;
 img_ufo_r  (:,:,4) = alpha_ufo_r  ;
+img_earth  (:,:,4) = alpha_earth  ;
 img_escape  = imread('Figures/escape.jpg');
 img_demo_02 = imread('Figures/Demo02.png');
 img_demo_03 = imread('Figures/Demo03.png');
@@ -127,6 +125,7 @@ tex_l_arrow = Screen('MakeTexture', main_window, img_l_arrow);
 tex_r_arrow = Screen('MakeTexture', main_window, img_r_arrow);
 tex_ufo_w   = Screen('MakeTexture', main_window, img_ufo_w  );
 tex_ufo_r   = Screen('MakeTexture', main_window, img_ufo_r  );
+tex_earth   = Screen('MakeTexture', main_window, img_earth  );
 tex_escape  = Screen('MakeTexture', main_window, img_escape );
 tex_demo_02 = Screen('MakeTexture', main_window, img_demo_02);
 tex_demo_03 = Screen('MakeTexture', main_window, img_demo_03);
@@ -139,7 +138,7 @@ tex_demo_11 = Screen('MakeTexture', main_window, img_demo_11);
 tex_demo_12 = Screen('MakeTexture', main_window, img_demo_12);
 
 SM_Definitions;
-sm_state = SM_DEMO_SHOW_EARTH;
+sm_state = SM_DEMO_INIT;
 
 while sm_state != SM_DEMO_END
   Screen('TextSize', main_window, 25);
@@ -320,12 +319,106 @@ while sm_state != SM_DEMO_END
       elseif key_code(key_right)
 	sm_state = SM_DEMO_END
       end
+
     otherwise
       sm_state = SM_DEMO_END;
     end
-    if key_code(key_escape)
-        sm_state = SM_DEMO_END;
+  if key_code(key_escape)
+    sm_state = SM_DEMO_END;
+    Screen('CloseAll')
+  end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               Practice phase
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+
+trajectory_thickness = 3;
+sm_state = SM_PRACTICE_INIT;
+trial = 0
+ufo_theta = 0;
+ufo_speed = 0;
+ufo_pose_x = 0;
+ufo_pose_y = 0;
+correct_position = false
+ShowCursor('CrossHair',main_window);
+Screen('TextSize', main_window,25);
+while sm_state != SM_PRACTICE_END
+  trial += 1
+  
+  switch sm_state
+         
+    case SM_PRACTICE_INIT
+      ufo_theta += ufo_speed;
+      ufo_speed += 0.1*randn(1);
+      ufo_pose_x = screen_cx + trajectory_radius*cos(ufo_theta);
+      ufo_pose_y = screen_cy + trajectory_radius*sin(ufo_theta);
+      Screen('FillRect', main_window, color_bg);
+      Screen('DrawTexture', main_window, tex_earth,[],mrect(screen_cx,screen_cy,trajectory_radius-y_32));
+      Screen('DrawDots', main_window, trajectory_xy, trajectory_thickness, color_navy, [], 0);
+      Screen('DrawTexture', main_window, tex_ufo_w,[],mrect2(ufo_pose_x,ufo_pose_y,y_32));
+      DrawFormattedText(main_window,['Fase de entrenamiento'] ,'center',y_16,color_text);
+      Screen(main_window, 'Flip');
+      WaitSecs(1);
+      Screen('FillRect', main_window, color_bg);
+      Screen('DrawTexture', main_window, tex_earth,[],mrect(screen_cx,screen_cy,trajectory_radius-y_32));
+      Screen('DrawDots', main_window, trajectory_xy, trajectory_thickness, color_navy, [], 0);
+      DrawFormattedText(main_window,['Fase de entrenamiento'] ,'center',y_16,color_text);
+      Screen(main_window, 'Flip');
+      sm_state = SM_PRACTICE_WAIT_CLICK
+
+    case SM_PRACTICE_WAIT_CLICK
+      %It is considered a click when it happens on the trajectory (with a tolerance of 50 pixels)
+      clicked = false;
+      [keyIsDown, secs, key_code] = KbCheck;
+      while ~clicked && ~key_code(key_escape) && ~key_code(key_right)
+        [mouse_x, mouse_y, buttons]= GetMouse(main_window);
+        d = abs(distance(mouse_x, mouse_y, screen_cx, screen_cy) - trajectory_radius);
+        clicked = d < 50 && buttons(1);
+        [keyIsDown, secs, key_code] = KbCheck;
+      end
+      correct_position = distance(mouse_x, mouse_y, ufo_pose_x, ufo_pose_y) < 52
+      sm_state = SM_PRACTICE_SHOW_RESULT;
+      if key_code(key_right)
+        sm_state= SM_PRACTICE_END
+      end
+      
+    case SM_PRACTICE_SHOW_RESULT
+      text = 'Fase de entrenamiento';
+      if trial > 20 && trial < 30
+        text = '¡Sigue practicando!';
+      elseif trial >= 30
+        text = 'Si estás listo, presiona la flecha derecha para comenzar el experimento';
+      end
+      Screen('DrawTexture', main_window, tex_earth,[],mrect(screen_cx,screen_cy,trajectory_radius-y_32));
+      Screen('DrawDots', main_window, trajectory_xy, trajectory_thickness, color_navy, [], 0);
+      DrawFormattedText(main_window,[text] ,'center',y_16,color_text);
+      if correct_position
+        Screen('DrawTexture', main_window, tex_ufo_r,[],mrect2(ufo_pose_x, ufo_pose_y,y_32));
+      else
+        Screen('DrawTexture', main_window, tex_ufo_w,[],mrect2(ufo_pose_x, ufo_pose_y,y_32));
+      end
+      Screen(main_window, 'Flip');
+      WaitSecs(0.5);
+      Screen('FillRect', main_window, color_bg);
+      Screen('DrawTexture', main_window, tex_earth,[],mrect(screen_cx,screen_cy,trajectory_radius-y_32));
+      Screen('DrawDots', main_window, trajectory_xy, trajectory_thickness, color_navy, [], 0);
+      DrawFormattedText(main_window,[text] ,'center',y_16,color_text);
+      Screen(main_window, 'Flip');
+      %Calculate the next ufo position
+      ufo_theta += ufo_speed;
+      ufo_speed += 0.1*randn(1);
+      ufo_pose_x = screen_cx + trajectory_radius*cos(ufo_theta);
+      ufo_pose_y = screen_cy + trajectory_radius*sin(ufo_theta);
+      sm_state = SM_PRACTICE_WAIT_CLICK
+    otherwise
+      sm_state = SM_PRACTICE_END;
     end
+  if key_code(key_escape)
+    sm_state = SM_PRACTICE_END;
+    Screen('CloseAll')
+  end
 end
 
 Screen('CloseAll');
