@@ -421,4 +421,157 @@ while sm_state != SM_PRACTICE_END
   end
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               TASK
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+
+ShowCursor('CrossHair',main_window);
+
+for j=1:n_blocks
+    
+    %actual position X
+    r1=block_observationsX(:,j);
+    %actual position Y
+    r2=block_observationsY(:,j);
+    %generative mean
+    m=block_position(:,j);
+    %velocity
+    V=block_velocity(:,j);
+    %velocity switch
+    dv=block_vdirection(:,j);
+    
+    for i=1:length(r)
+        
+        if i==1
+            Screen('FillRect', main_window, color_bg);
+            Screen('DrawTexture', main_window, tex_earth,[],mrect(screen_cx, screen_cy, ym-y_8-y_16));
+            Screen('DrawDots', main_window, trajectory_xy, trajectory_thickness, color_navy , [], 0);
+            Screen('DrawTexture', main_window, tex_ufo_w,[],mrect2(r1(i),r2(i),y_32));
+            
+            rt_show(i,j) = Screen(main_window, 'Flip');
+            
+            WaitSecs(1);
+            Screen('FillRect', main_window, color_bg);
+            Screen('DrawTexture', main_window, tex_earth,[],mrect(screen_cx, screen_cy, ym-y_8-y_16));
+            Screen('DrawDots', main_window, trajectory_xy, trajectory_thickness, color_navy , [], 0);
+            rt_disappear(i,j) = Screen(main_window, 'Flip');
+            
+            ispressed = false;
+            
+            while ~ispressed
+                
+                [x,y1,buttons]= GetMouse(main_window);
+                
+                [d] = distance(x, y1,screen_cx, screen_cy);
+                
+                if d > trajectory_radius+50 || d< trajectory_radius-50
+                    
+                    ispressed = 0;
+                else
+                    ispressed = buttons(1);
+                end
+                
+                [keyIsDown, secs, keyCode] = KbCheck;
+                rt_press(i,j) = secs;
+                if keyIsDown
+                    if keyCode(key_escape)
+                        Screen('CloseAll');
+                        return;
+                    else
+                        ;
+                    end
+                end
+                
+            end
+            
+            X(i) = x;
+            Y(i) = y1;
+            aciertos(i)=nan;
+        else
+            
+            Screen('FillRect', main_window, color_bg);
+            Screen('DrawTexture', main_window, tex_earth,[],mrect(screen_cx, screen_cy, ym-y_8-y_16));
+            Screen('DrawDots', main_window, trajectory_xy, trajectory_thickness , color_navy , [], 0);
+            
+            [d]=distance(r1(i),r2(i), X(i-1), Y(i-1));
+            
+            if d <= 52
+                
+                Screen('DrawTexture', main_window, tex_ufo_r,[],mrect2(r1(i),r2(i),y_32));
+                aciertos(i)=1;
+            else
+                Screen('DrawTexture', main_window, tex_ufo_w,[],mrect2(r1(i),r2(i),y_32));
+                aciertos(i)=0;
+            end
+            
+            Screen('FrameOval',main_window,color_red,mrect(x,y1,20));
+            Screen('FillOval',main_window,color_red,mrect(x,y1,7));
+            
+            rt_show(i,j) = Screen(main_window, 'Flip');
+            
+            %cambiar 80
+            WaitSecs(0.5);
+            Screen('FillRect', main_window, color_bg);
+            Screen('DrawTexture', main_window, tex_earth,[],mrect(screen_cx, screen_cy, ym-y_8-y_16));
+            Screen('DrawDots', main_window, trajectory_xy, trajectory_thickness, color_navy , [], 0);
+            Screen('FrameOval',main_window,color_red,mrect(x,y1,20));
+            Screen('FillOval',main_window,color_red,mrect(x,y1,7));
+            rt_disappear(i,j) = Screen(main_window, 'Flip');
+            
+            ispressed = false;
+            
+            while ~ispressed
+                
+                [x,y1,buttons]= GetMouse(main_window);
+                
+                [d] = distance(x, y1,screen_cx, screen_cy);
+                
+                if d > trajectory_radius+50 || d< trajectory_radius-50
+                    
+                    ispressed = 0;
+                else
+                    ispressed = buttons(1);
+                end
+                
+                [keyIsDown, secs, keyCode] = KbCheck;
+                rt_press(i,j) = secs;
+                if keyIsDown
+                    if keyCode(key_escape)
+                        Screen('CloseAll');
+                        return;
+                    else
+                        ;
+                    end
+                end
+                
+            end
+            
+            X(i) = x;
+            Y(i) = y1;
+        end
+        
+    end
+    
+    block_responsesX(:,j)= X;
+    block_responsesY(:,j)= Y;
+    aciertos_T=round((nansum(aciertos)/(n_trials-1))*100);
+    m_aciertos(:,j)=aciertos_T;
+    cc=['Porcentaje de aciertos: ',num2str(aciertos_T), '%'];
+    
+    if j<n_blocks
+        Screen('TextSize', main_window,30);
+        Screen('FillRect', main_window, color_bg);
+        DrawFormattedText(main_window,['Puedes tomar un pequeño descanso.\n\nPresiona cualquier tecla para iniciar la siguiente ronda cuando estés listo'] ,'center','center',textcolor);
+        DrawFormattedText(main_window,[cc] ,'center',ym-y_8,green);
+        Screen(main_window, 'Flip');
+        [secs, keyCode] = KbStrokeWait;
+    else
+        ;
+    end
+    
+end
+
+
 Screen('CloseAll');
