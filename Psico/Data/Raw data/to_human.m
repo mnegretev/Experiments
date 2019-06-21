@@ -1,0 +1,15 @@
+clear
+file="S_2";
+load(file)
+save("-ascii", [file "_block_observationsX.txt"], "block_observationsX")
+save("-ascii", [file "_block_observationsY.txt"], "block_observationsY")
+save("-ascii", [file "_block_position.txt"], "block_position")
+save("-ascii", [file "_block_responsesX.txt"], "block_responsesX")
+save("-ascii", [file "_block_responsesY.txt"], "block_responsesY")
+save("-ascii", [file "_block_theta.txt"], "block_theta")
+save("-ascii", [file "_block_vdirection.txt"], "block_vdirection")
+save("-ascii", [file "_block_velocity.txt"], "block_velocity")
+save("-ascii", [file "_ratio.txt"], "ratio")
+save("-ascii", [file "_sigma_o.txt"], "sigma_o")
+save("-ascii", [file "_sigma_v.txt"], "sigma_v")
+save("-ascii", [file "_sigma_x.txt"], "sigma_x")
