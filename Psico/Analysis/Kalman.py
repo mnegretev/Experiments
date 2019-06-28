@@ -1,5 +1,6 @@
 import sys
 import numpy
+import matplotlib.pyplot as plt
 
 def mat_from_file(file_name):
     f = open(file_name,'r')
