@@ -1,0 +1,9 @@
+<launch>
+  <param name="robot_description" command="cat $(find stars_simulator)/config_files/orbital_params.xml" />
+  
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+  <node name="simulator_gui" pkg="simulator_gui" type="simulator_gui_node"/>
+  <node name="ecliptic_reference" pkg="stars_simulator" type="ecliptic_reference.py" output="screen"/>
+  <node name="planet_orbit" pkg="stars_simulator" type="planet_orbit.py" output="screen"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find stars_simulator)/config_files/rviz_config.rviz"/>
+</launch>

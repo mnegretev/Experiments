@@ -1,0 +1,31 @@
+<robot name="orbital_params">
+  <link name="sun_ecliptic">    
+  </link>
+  <link name="sun_N">
+  </link>
+  <link name="sun_i">
+  </link>
+  <link name="sun_w">
+  </link>
+  <joint name="ascending_node_longitude" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="sun_ecliptic"/>
+    <child link="sun_N"/>
+    <axis xyz="0 0 1" />
+    <limit upper="3.15" lower="-3.15" effort="0" velocity="0" />
+  </joint>
+  <joint name="inclination" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="sun_N"/>
+    <child link="sun_i"/>
+    <axis xyz="1 0 0" />
+    <limit upper="3.15" lower="-3.15" effort="0" velocity="0" />
+  </joint>
+  <joint name="argument_of_periapsis" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="sun_i"/>
+    <child link="sun_w"/>
+    <axis xyz="0 0 1" />
+    <limit upper="3.15" lower="-3.15" effort="0" velocity="0" />
+  </joint>
+</robot>
